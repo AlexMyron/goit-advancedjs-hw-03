@@ -15,6 +15,7 @@ function fetchBreeds() {
 }
 
 function fetchCatByBreed(breed_ids) {
+  if (!breed_ids) return;
   const url = `${catUrl}breed_ids=${breed_ids}`;
   return axios({ url }).then(res => {
     if (res.status !== 200)

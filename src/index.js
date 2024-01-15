@@ -14,12 +14,32 @@ const refs = {
 const customSelect = new SlimSelect({
   select: refs.select,
   data: [],
+  settings: {
+    placeholderText: 'Choose your kitty',
+  },
+  events: {
+    afterChange: breedData => handleChange(breedData),
+  },
 });
 
+fetchBreeds()
+  .then(data => {
+    refs.selectWrapper.classList.remove('hidden');
+    customSelect.setData(renderSelect(data));
+  })
+  .catch(e => {
+    console.log(e.message);
+    showToast();
+  })
+  .finally(() => refs.loader.classList.add('hidden'));
+
 function renderSelect(list) {
-  return list.map(({ id, name }) => {
+  const listMarkup = list.map(({ id, name }) => {
     return { value: id, text: name };
   });
+
+  listMarkup.unshift({ value: '', text: 'Choose your kitty' });
+  return listMarkup;
 }
 
 function renderCatInfo({ url, breeds }) {
@@ -47,18 +67,11 @@ function showToast() {
   });
 }
 
-fetchBreeds()
-  .then(data => {
-    refs.selectWrapper.classList.remove('hidden');
-    customSelect.setData(renderSelect(data));
-  })
-  .catch(e => {
-    console.log(e.message);
-    showToast();
-  })
-  .finally(() => refs.loader.classList.add('hidden'));
+function handleChange(breedData) {
+  const catId = breedData[0].value;
 
-refs.select.addEventListener('change', ({ target: { value: catId } }) => {
+  if (!catId) return;
+
   refs.loader.classList.remove('hidden');
   refs.catInfo.innerHTML = '';
   fetchCatByBreed(catId)
@@ -70,4 +83,4 @@ refs.select.addEventListener('change', ({ target: { value: catId } }) => {
       showToast();
     })
     .finally(() => refs.loader.classList.add('hidden'));
-});
+}
